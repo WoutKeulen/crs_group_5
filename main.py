@@ -9,8 +9,8 @@ working_hours = 9
 mu_t1 = 0.4
 sigma_t1 = 0.1
 # Patient type 2
-k_t2 = 14
-theta_t2 = 0.048
+k_t2 = 12.587
+theta_t2 = 0.05319
 mu_t2 = 0
 sigma_t2 = 0.25
 
