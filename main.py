@@ -1,34 +1,34 @@
 # skills code OR-part
 import numpy as np
 
-# INPUT PARAMETERS #############################################################################
-# Patient type 1
-# input for lambda, l_t1, is per day, therefore uses working hours
-l_t1 = 17
-working_hours = 9
-mu_t1 = 0.4
-sigma_t1 = 0.1
-# Patient type 2
+# INPUT PARAMETERS
+# Patient type 1, inter-calling times simulation parameters, exponentially distributed
+lambda_t1 = 0.5075
+# Patient type 1, scan duration simulation parameters, normally distributed
+mu_t1 = 0.4328
+sigma_t1 = np.sqrt(0.00955)
+# Patient type 2, inter-calling times simulation parameters, gamma distributed
 k_t2 = 12.587
 theta_t2 = 0.05319
-mu_t2 = 0
-sigma_t2 = 0.25
+# Patient type 2, scan duration simulation parameters, weibull distributed
+shape_t2 = 3
+scale_t2 = 0.966
 
 # Scheduled appointment time for each patient type
 appointment_duration_t1 = 0.4
 appointment_duration_t2 = 0.8
 
 # Thresholds for performance measures (performance measures 6.1 & 6.2)
-threshold_1 = 0.01
-threshold_2 = 0.1
+threshold_1 = 0.05  # corresponds to a waiting time of 3 minutes
+threshold_2 = 0.1   # corresponds to a waiting time of 6 minutes
 
 # Number of days for one simulation
-number_of_days = 23
+number_of_days = 100
 # Number of simulations
-number_simulations = 10
-#################################################################################################
+number_simulations = 1
 
-# CODE START ####################################################################################
+
+# CODE START
 # function that returns 7 list of lists in the following order:
 # 1) list containing lists of simulated call times for type 1 patients for a given number of days
 # 2) list containing lists of simulated scan times for type 1 patients for a given number of days
@@ -46,9 +46,24 @@ def patient_simulation(number_of_days):
     master_call_combined = []
     master_scan_combined = []
     master_index_combined = []
-    for i in range(number_of_days):
-        call_t1 = arrival_simulation_t1(l_t1, working_hours)
-        call_t2 = arrival_simulation_t2(mu_t2, sigma_t2)
+    # first add for first day, later rest of iteration
+    call_t1, left_t1 = arrival_simulation_t1(lambda_t1, 8.00)
+    call_t2, left_t2 = arrival_simulation_t2(shape_t2, scale_t2, 8.00)
+    scan_t1 = scan_times_type1(call_t1, mu_t1, sigma_t1)
+    scan_t2 = scan_times_type2(call_t2, k_t2, theta_t2)
+    # add these to the global lists where types are seperated:
+    master_call_type1.append(call_t1)
+    master_call_type2.append(call_t2)
+    master_scan_type1.append(scan_t1)
+    master_scan_type2.append(scan_t2)
+    # Construct lists for the case of patients not seperated on type
+    call_today, scan_today, index_today = comb_sim_cal(call_t1, call_t2, scan_t1, scan_t2)
+    master_call_combined.append(call_today)
+    master_scan_combined.append(scan_today)
+    master_index_combined.append(index_today)
+    for i in range(1, number_of_days):
+        call_t1, left_t1 = arrival_simulation_t1(lambda_t1, left_t1)
+        call_t2, left_t2 = arrival_simulation_t2(shape_t2, scale_t2, left_t2)
         scan_t1 = scan_times_type1(call_t1, mu_t1, sigma_t1)
         scan_t2 = scan_times_type2(call_t2, k_t2, theta_t2)
         # add these to the global lists where types are seperated:
@@ -68,28 +83,31 @@ def patient_simulation(number_of_days):
 # simulation functions#
 #######################
 # function that returns simulated calling times for 1 day for type 1 patients
-def arrival_simulation_t1(l, working_hours):
-    l_hour = l / working_hours
-    l_hour_inverse = 1.0 / l_hour
-    arrival_time = [8.00]
+def arrival_simulation_t1(l, arrival_0):
+    arrival_time = [arrival_0]
     counter = 1
     while arrival_time[-1] <= 17.00:
-        arrival_time.append(arrival_time[counter - 1] + np.random.exponential(l_hour_inverse))
+        arrival_time.append(arrival_time[counter - 1] + np.random.exponential(l))
         counter += 1
-    arrival_time.remove(arrival_time[0])
+    # this if statement checks if it is the first day, removes arrival of 8.00 used for first day
+    if arrival_0 == 8.00:
+        arrival_time.remove(arrival_time[0])
+    arrival_n = arrival_time[-1] - 9.00
     arrival_time.remove(arrival_time[-1])
-    return arrival_time
+    return arrival_time, arrival_n
 # function that returns simulated calling times for 1 day for type 2 patients
-def arrival_simulation_t2(mu_t2, sigma_t2):
-    arrival_time = [8.00]
+def arrival_simulation_t2(shape_t2, scale_t2, arrival_0):
+    arrival_time = [arrival_0]
     counter = 1
     while arrival_time[-1] <= 17.00:
-        # standard normal here?
-        arrival_time.append(arrival_time[counter - 1] + np.random.lognormal(mu_t2, sigma_t2))
+        arrival_time.append(arrival_time[counter - 1] + scale_t2 * np.random.weibull(shape_t2))
         counter += 1
-    arrival_time.remove(arrival_time[0])
+    # this if statement checks if it is the first day, removes arrival of 8.00 used for first day
+    if arrival_0 == 8.00:
+        arrival_time.remove(arrival_time[0])
+    arrival_n = arrival_time[-1] - 9.00
     arrival_time.remove(arrival_time[-1])
-    return arrival_time
+    return arrival_time, arrival_n
 # function that returns simulated scan durations for type 1 patients
 def scan_times_type1(day, mu1, sigma1):
     scan_time_list_prime = []
@@ -435,8 +453,8 @@ print("idle time new:", idle_time_new_glob)
 print("overtime old:", overtime_old)
 print("overtime new:", overtime_new)
 # 6.1
-print("threshold 1 old:", threshold_1, threshold_old_1_glob)
-print("threshold 1 new:", threshold_1, threshold_new_1_glob)
+print("threshold 1:", threshold_1*60, "minutes, old", threshold_old_1_glob)
+print("threshold 1:", threshold_1*60, "minutes, new", threshold_new_1_glob)
 # 6.2
-print("threshold 2 old:", threshold_2, threshold_old_2_glob)
-print("threshold 2 new:", threshold_2, threshold_new_2_glob)
+print("threshold 2:", threshold_2*60, "minutes, old", threshold_old_2_glob)
+print("threshold 2:", threshold_2*60, "minutes, new", threshold_new_2_glob)
