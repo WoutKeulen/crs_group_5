@@ -1,25 +1,40 @@
 # crs_group_5
-input parameters overview
+# INPUT PARAMETERS
 
-l_t1: lambda for poisson arrivals per day of type 1 patiënt
-working_hours: is used for calculating arrival times with lambda for the time interval 8:00-17:00
+# Patient type 1
+lambda_t1 = 0.5075
+mu_t1 = 0.4328
+sigma_t1 = np.sqrt(0.00955)
+-> lambda_t1: parameter for exponential distribution, for inter-calling times simulation
+-> mu_t1: mean parameter for normal distribution, for scan duration simulation
+-> sigma_t1: standard deviation parameter for normal distribution, for scan duration simulation
 
-mu_t1: mean duration of normally distributed scanning time for type 1 patient
-sigma_t1: standard deviation of normally distributed scanning time for type 1 patient
+# Patient type 2
+k_t2 = 12.587
+theta_t2 = 0.05319
+shape_t2 = 3
+scale_t2 = 0.966
+-> k_t2: shape parameter for gamma distribution, for inter-calling times simulation
+-> theta_t2: scale parameter for gamma distribution, for inter-calling times simulation
+-> shape_t2: shape parameter for weibull distribution, for scan duration simulation
+-> scale_t2: scale parameter for weibull distribution, for scan duration simulation
 
+# Scheduled appointment durations
+appointment_duration_t1 = 0.4
+appointment_duration_t2 = 0.8
+-> appointment_duration_t1: length of scheduled appointment for type 1 patient
+-> appointment_duration_t2: length of scheduled appointment for type 2 patient
 
-k_t2: parameter for gamma distributed scan duration for patient of type 2
-theta_t2: parameter for gamma distributed scan duration for patient of type 2
+# Thresholds for performance measures 
+threshold_1 = 0.05  # corresponds to a waiting time of 3 minutes
+threshold_2 = 0.1   # corresponds to a waiting time of 6 minutes
+-> threshold_1, threshold_2: thresholds for waiting times in hours
 
-mu_t2: mean of lognormal arrival time for  patient of type 2
-sigma_t2: standard deviation of lognormal arrival time for patient of type 2
+# Number of days for one simulation
+number_of_days = 100
+-> number_of_days: number of days in one simulation
 
-appointment_duration_t1: time reserved for appointment of patient of type 1
-appointment_duration_t2: time reserved for appointment of patient of type 2
+# Number of simulations
+number_simulations = 1
+-> number_simulations: number of total simulations, each spanning a number of days equal to number_of_days
 
-
-threshold_1, threshold_2: thresholds for waiting times, performance measure functions check how many patients are above the threshold
-
-
-number_of_days: number of days included in one simulation
-number_simulations: number of simulations 
