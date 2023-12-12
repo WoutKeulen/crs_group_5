@@ -322,7 +322,7 @@ def avg_wait_time_global(schedules_m1, real_schedules_m1, schedules_m2, real_sch
                 time_waited += real_schedules_m2[y][z] - schedules_m2[y][z]
     return time_waited / num_patients
 # 4) total idle time
-# think about if finished before 1700 counts as idle time? Currently not implemented
+# time between finishing last appointment & 17:00 is also counted as idle time
 def total_idle_time(schedules_m1, real_schedules_m1, schedules_m2, real_schedules_m2, scan_m1, scan_m2):
     idle_time_global = 0.0
     for x in range(0, len(schedules_m1)):
