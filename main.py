@@ -23,7 +23,7 @@ threshold_1 = 0.05  # corresponds to a waiting time of 3 minutes
 threshold_2 = 0.1   # corresponds to a waiting time of 6 minutes
 
 # Number of days for one simulation
-number_of_days = 100
+number_of_days = 10000
 # Number of simulations
 number_simulations = 1
 
@@ -327,18 +327,18 @@ def total_idle_time(schedules_m1, real_schedules_m1, schedules_m2, real_schedule
     idle_time_global = 0.0
     for x in range(0, len(schedules_m1)):
         for y in range(1, len(schedules_m1[x])):
-            if schedules_m1[x][y] >= real_schedules_m1[x][y - 1]:
-                idle_time_global += schedules_m1[x][y] - real_schedules_m1[x][y - 1]
+            if schedules_m1[x][y] > real_schedules_m1[x][y - 1] + scan_m1[x][y - 1]:
+                idle_time_global += schedules_m1[x][y] - real_schedules_m1[x][y - 1] - scan_m1[x][y - 1]
         # check if machine 1 is idle after last appointment, i.e. between end last appointment and 17:00
         if real_schedules_m1[x][-1] + scan_m1[x][-1] < 17.0:
-            idle_time_global += 17.0 - real_schedules_m1[x][-1] + scan_m1[x][-1]
-    for x in range(0, len(schedules_m2)):
-        for y in range(1, len(schedules_m2[x])):
-            if schedules_m2[x][y] >= real_schedules_m2[x][y - 1]:
-                idle_time_global += schedules_m2[x][y] - real_schedules_m2[x][y - 1]
+            idle_time_global += 17.0 - real_schedules_m1[x][-1] - scan_m1[x][-1]
+    for i in range(0, len(schedules_m2)):
+        for j in range(1, len(schedules_m2[i])):
+            if schedules_m2[i][j] > real_schedules_m2[i][j - 1] + scan_m2[i][j - 1]:
+                idle_time_global += schedules_m2[i][j] - real_schedules_m2[i][j - 1] - scan_m2[i][j - 1]
         # check if machine 2 is idle after last appointment, i.e. between end last appointment and 17:00
-        if real_schedules_m2[x][-1] + scan_m2[x][-1] < 17.0:
-            idle_time_global += 17.0 - real_schedules_m2[x][-1] + scan_m2[x][-1]
+        if real_schedules_m2[i][-1] + scan_m2[i][-1] < 17.0:
+            idle_time_global += 17.0 - real_schedules_m2[i][-1] - scan_m2[i][-1]
     return idle_time_global
 # 5) total over time
 # comment
@@ -370,6 +370,7 @@ def wait_threshold(schedules_m1, real_schedules_m1, schedules_m2, real_schedules
             if real_schedules_m2[x][y] - schedules_m2[x][y] > threshold:
                 global_threshold += 1
     return (global_threshold / num_patients) * 100
+
 
 ##############################################################################
 # DRIVER CODE FOR number_simulations SIMULATIONS, EACH OF SIZE number_of_days#
