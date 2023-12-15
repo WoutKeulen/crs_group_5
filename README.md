@@ -4,7 +4,7 @@ computational_skills.R
 
 # OR part code
 main.py
-# Or code input parameter descriptions
+# OR code input parameter descriptions
 **Patient type 1**
 lambda_t1 = 0.5075
 mu_t1 = 0.4328
