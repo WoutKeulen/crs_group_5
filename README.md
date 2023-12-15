@@ -1,9 +1,9 @@
 # crs_group_5
 # Econometrics part code
-computational_skills.R
+File: computational_skills.R
 
 # OR part code
-main.py
+File: main.py
 # OR code input parameter descriptions
 **Patient type 1**
 lambda_t1 = 0.5075
